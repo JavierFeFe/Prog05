@@ -53,7 +53,7 @@ En el momento de la instanciación del objecto se asignará un valor único para
     private String titular, cuentaCompleta,codigoEntidad, oficina, digitoControl, numeroCuenta, codigoError;
     private double saldo;
 ````
-*Creo los atributos necesarios
+* Creo los atributos necesarios
 
 ```Java
     public CuentaBancaria(String titular, String codigoEntidad, String oficina, String digitoControl, String numeroCuenta) {
@@ -80,7 +80,7 @@ En el momento de la instanciación del objecto se asignará un valor único para
         }
     }
 ```
-*Creo un constructor que permita introducir los distintos campos de forma individual.
+* Creo un constructor que permita introducir los distintos campos de forma individual.
 ```Java
     public CuentaBancaria(String titular, String cuentaCompleta) {
         //Si no se verifica la cuenta se guarda un código de error en la variable codigoError
@@ -105,7 +105,7 @@ En el momento de la instanciación del objecto se asignará un valor único para
 
     }
 ````
-*Constructor que acepta un nº de cuenta en formato String, con o sin seperaciones por espacio, y verifica que sea correcta.
+* Constructor que acepta un nº de cuenta en formato String, con o sin seperaciones por espacio, y verifica que sea correcta.
 ```Java
     private static String[] getArrayCuenta(String cuenta){//Método que permite descomponer un String de cuenta bancaria en un array
         String entidad = cuenta.substring(0,4);
@@ -138,7 +138,7 @@ En el momento de la instanciación del objecto se asignará un valor único para
         return false;
     }
 ````
-*Métodos Estáticos que nos permiten verificar si un nº de cuenta es válido mediante el cálculo del Dígito de Control (el método compruebaDC es público, por lo que se podría llamar desde otra clase).
+* Métodos Estáticos que nos permiten verificar si un nº de cuenta es válido mediante el cálculo del Dígito de Control (el método compruebaDC es público, por lo que se podría llamar desde otra clase).
 ```Java
     public String getError(){
         return codigoError;
@@ -170,7 +170,7 @@ En el momento de la instanciación del objecto se asignará un valor único para
         return saldo;
     }
 ````
-*Getters básicos que devuelven los valores de los atributos principales.
+* Getters básicos que devuelven los valores de los atributos principales.
 ```Java
     public String depositaSaldo(double inc){
         if (inc > 0.0){//La cantidad debe ser un nº positivo mayor a 0
@@ -213,5 +213,5 @@ En el momento de la instanciación del objecto se asignará un valor único para
         }
     }
  ````
- *Estos son getters q hacen en cierta medida funciones de setters, en este caso los declaro así porque me interesa capturar los posibles errores a la hora de introducir los valores (sobrecarga de métodos que permiten introducir el valor tanto en formato String como en double).
+ * Estos son getters q hacen en cierta medida funciones de setters, en este caso los declaro así porque me interesa capturar los posibles errores a la hora de introducir los valores (sobrecarga de métodos que permiten introducir el valor tanto en formato String como en double).
     
