@@ -213,5 +213,5 @@ En el momento de la instanciación del objecto se asignará un valor único para
         }
     }
  ````
- *Estos son getters q hacen en cierta medida funciones de setters, en este caso los declaro así porque me interesa capturar los posibles errores a la hora de introducir los valores (sobrecarga de métodos que permiten introducir el valor tanto en formato String como en double).*
+ *Estos son getters que hacen en cierta medida funciones de setters, en este caso los declaro así porque me interesa capturar los posibles errores a la hora de introducir los valores (sobrecarga de métodos que permiten introducir el valor tanto en formato String como en double).*
     
