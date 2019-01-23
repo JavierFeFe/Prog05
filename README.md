@@ -17,6 +17,7 @@ Se trata de desarrollar una aplicación Java en consola que permita gestionar un
 * Retirar efectivo. Habrá que solicitar por teclado la cantidad que se desea retirar.
 * Consultar saldo.
 * Salir de la aplicación.
+
 Antes de que aparezca este menú, el programa tendrá que solicitar al usuario los siguientes datos:
 
 * Nombre del titular de la cuenta (con un máximo de caracteres).
@@ -36,59 +37,181 @@ Además del programa principal de la aplicación (clase con una función main), 
 * Obtención del saldo (métodos de interfaz pública).
 * Obtención de información sobre la cuenta: número de la cuenta, entidad, oficina, titular, etc. (métodos de interfaz pública).
 * Aquellas herramientas auxiliares necesarias para poder trabajar cómodamente con el objeto. Algunas de esas herramientas podrán ser públicos y otras quizá no. Algunas podrán ser específicas de clase y otras podrán ser de objeto (métodos de objeto privados, métodos estáticos públicos, etc.).
+  
 Para trabajar con el número de cuenta debes utilizar el modelo de Código Cuenta Cliente (CCC), que está formado por cuatro campos: entidad - sucursal - dígito de control - número de cuenta. La idea es que puedas introducir el código de cuenta completo y que la clase disponga de un mecanismo para comprobar que ese código es válido. Si el código no es válido, se debería generar una excepción (y por supuesto no almacenar ese código de cuenta). Para ello podrías tener, por ejemplo, un método estático que permita validar códigos de cuenta.
 
 En general, deberías incluir excepciones para controlar aquellos casos en los que el uso de un método no sea posible (intentar sacar más dinero del que hay en el saldo, intentar introducir un titular con más caracteres de los permitidos, intentar ingresar o retirar una cantidad negativa, etc.).
 
 El código fuente Java de esta clase debería incluir comentarios en cada atributo (o en cada conjunto de atributos) y método (o en cada conjunto de métodos del mismo tipo) indicando su utilidad. El programa principal también debería incluir algunos comentarios explicativos sobre su funcionamiento y la utilización de objetos de la clase CuentaBancaria.
 
-Además del programa deberás escribir también un informe con todas las consideraciones oportunas que se necesiten para entender cómo has realizado la tarea.
+## Creación de la clase CuentaBancaria.java
 
-El proyecto deberá contener al menos dos archivos fuente Java:
+La clase CuentaBancaria estará compuesta por un conjunto de atributos privados a los que se podrá acceder desde distintos métodos.
+En el momento de la instanciación del objecto se asignará un valor único para titular y cuenta bancaria, desde el propio constructor se verificará si el nº de cuenta es válido, en caso de no serlo no se guardarán los valores de la cuenta en los atributos y guardará en el atributo codigoError el problema de la creación del objeto (en caso des ser null quiere decir que la cuenta es válida). Al no existir métodos setter para los distintos campos de la cuenta bancaría nos obligará a instanciar de nuevo el objeto (Con esto evito posibles errores al intentar cambiar cualquiera de los campos del nº de cuenta bancaria).
 
-* Programa principal (clase con método main: AplicacionCuentaBancaria.java).
-* La clase CuentaBancaria (CuentaBancaria.java).
-El documento que contendrá el informe lo elaborarás con un procesador de texto. Debe ser de tipo ".doc" (Microsoft Word) o de tipo ".odt" (OpenOffice.org). Debe tener tamaño de página A4, estilo de letra Times New Roman, tamaño 12 e interlineado normal.
+```Java
+    private String titular, cuentaCompleta,codigoEntidad, oficina, digitoControl, numeroCuenta, codigoError;
+    private double saldo;
+````
+*Creo los atributos necesarios
 
-CONSEJOS Y RECOMENDACIONES
-Para realizar la aplicación te realizamos la siguiente serie de recomendaciones:
+```Java
+    public CuentaBancaria(String titular, String codigoEntidad, String oficina, String digitoControl, String numeroCuenta) {
+        //Si no se verifica la cuenta se guarda un código de error en la variable codigoError
+        if ( //Verifico que los datos introducidos tienen la longitud correcta y son de tipo numérico
+                codigoEntidad.matches("\\d{4}")
+                && oficina.matches("\\d{4}")
+                && digitoControl.matches("\\d{2}")
+                && numeroCuenta.matches("\\d{10}")
+                ){
+            if (CuentaBancaria.compruebaDC(codigoEntidad + oficina + digitoControl + numeroCuenta)) { //Compruebo el código DC
+                this.titular = titular;
+                this.codigoEntidad = codigoEntidad;
+                this.oficina = oficina;
+                this.digitoControl = digitoControl;
+                this.numeroCuenta = numeroCuenta;
+                this.cuentaCompleta = codigoEntidad + oficina + digitoControl + numeroCuenta;
+                saldo = 0.0;
+            }else {
+                codigoError = "Verificación de cuenta incorrecta";
+            }
+        }else {
+            codigoError = "Formato de cuenta incorrecto";
+        }
+    }
+```
+*Creo un constructor que permita introducir los distintos campos de forma individual.
+```Java
+    public CuentaBancaria(String titular, String cuentaCompleta) {
+        //Si no se verifica la cuenta se guarda un código de error en la variable codigoError
+        //Verifico que la cadena de texto tenga un formato adecuado
+        if (cuentaCompleta.matches("^\\d{20}$") || cuentaCompleta.matches("^\\d{4}\\s\\d{4}\\s\\d{2}\\s\\d{10}$")) {
+            cuentaCompleta = cuentaCompleta.replaceAll(" ","");
+            String[] cuenta = getArrayCuenta(cuentaCompleta);
+            if (compruebaDC(cuentaCompleta)) { //Compruebo el código DC
+                this.titular = titular;
+                this.codigoEntidad = cuenta[0];
+                this.oficina = cuenta[1];
+                this.digitoControl = cuenta[2];
+                this.numeroCuenta = cuenta[3];
+                this.cuentaCompleta = cuentaCompleta;
+                saldo = 0.0;
+            } else {
+                codigoError = "Verificación de cuenta incorrecta";
+            }
+        }else {
+            codigoError = "Formato de cuenta incorrecto";
+        }
 
-Básate en los diferentes ejemplos que has tenido que probar durante el estudio de la unidad. Algunos de ellos te podrán servir de mucha ayuda, así que aprovéchalos.
-El ejercicio resuelto de la clase DNI, en el cual se hacen comprobaciones de entrada, puede servirte de base para la comprobación de la validez de un CCC.
-Puedes obtener información acerca del funcionamiento de la CCC y de cómo calcular los dígitos de control del siguiente artículo de Wikipedia:
-Wikipedia: Código Cuenta Cliente.
+    }
+````
+*Constructor que acepta un nº de cuenta en formato String, con o sin seperaciones por espacio, y verifica que sea correcta.
+```Java
+    private static String[] getArrayCuenta(String cuenta){//Método que permite descomponer un String de cuenta bancaria en un array
+        String entidad = cuenta.substring(0,4);
+        String oficina = cuenta.substring(4,8);
+        String dc = cuenta.substring(8,10);
+        String num = cuenta.substring(10,20);
+        return new String[]{entidad,oficina,dc,num};
+    }
+    public static boolean compruebaDC(String cuenta){ //Este método puede ser llamado desde cualquier otra clase para verificar la validez de una cuenta.
+        String[] arrayCuenta = getArrayCuenta(cuenta); //Llamada al método que descompone la cuenta en un array de Strings
+        int[] factores = {4,8,5,10,9,7,3,6}; //Primera comprobación.
+        String cuentaTmp = arrayCuenta[0] + arrayCuenta[1];
+        String[] digitos = cuentaTmp.split("");
+        long suma = 0;
+        for ( int i =0 ;i <8; i++ ){
+            suma += Integer.parseInt(digitos[i]) * factores[i];
+        }
+        long digito1 = (11-(suma %11)) < 10 ?11-(suma %11):11-(suma %11)==10?1:0;
+        int[] factores2 = {1,2,4,8,5,10,9,7,3,6}; //Segunda comprobación.
+        cuentaTmp = arrayCuenta[3];
+        digitos = cuentaTmp.split("");
+        suma = 0;
+        for ( int i =0 ;i <10; i++ ){
+            suma += Integer.parseInt(digitos[i]) * factores2[i];
+        }
+        long digito2 = (11-(suma %11)) < 10 ?11-(suma %11):11-(suma %11)==10?1:0;
+        if (arrayCuenta[2].equals(String.valueOf(digito1) + String.valueOf(digito2))){
+            return true;
+        }
+        return false;
+    }
+````
+*Métodos Estáticos que nos permiten verificar si un nº de cuenta es válido mediante el cálculo del Dígito de Control (el método compruebaDC es público, por lo que se podría llamar desde otra clase).
+```Java
+    public String getError(){
+        return codigoError;
+    }
+    public String getTitular() {
+        return titular;
+    }
 
-En la carpeta Recursos Complementarios UD05 dispones de un documento en el que se describe el procedimiento para el cálculo de los dígitos de control de una cuenta bancaria
-Puedes generar cuentas bancarias válidas (o comprobarlas) para hacer pruebas en tu programa desde el siguiente enlace:
-Generador/validador de cuentas bancarias.
+    public String getCodigoEntidad() {
+        return codigoEntidad;
+    }
 
-## Criterios de puntuación. Total 10 puntos.
-Para poder empezar a aplicar estos criterios es necesario que la aplicación compile y se ejecute correctamente. En caso contrario la puntuación será directamente de 0,00.
+    public String getOficina() {
+        return oficina;
+    }
 
-Criterios de puntuación.
-La clase CuentaBancaria dispone de todos los atributos necesarios.	1,00
-La clase CuentaBancaria dispone de al menos un constructor y funciona correctamente.	1,00
-La clase CuentaBancaria dispone de los métodos públicos de interfaz necesarios y funcionan correctamente.	4,00
-La clase CuentaBancaria es capaz de validar un CCC.	2,00
-Los métodos de la clase CuentaBancaria son capaces de lanzar excepciones si se produce alguna situación anómala.	1,00
-La clase CuentaBancaria dispone de métodos estáticos públicos para proporcionar herramientas de gestión útiles al código de fuera de la clase.	1,00
-No se han incluido comentarios en la clase CuentaBancaria tal y como se ha pedido en el enunciado.	-1,00
-No se han incluido comentarios apropiados en el programa principal describiendo el funcionamiento de éste.	-1,00
-No se ha entregado el informe explicativo o se trata de un informe explicativo insuficiente.	-2,00
-El programa principal no es capaz de crear un objeto de la clase CuentaBancaria.	-5,00
-Alguna de las opciones de menú pedidas en el enunciado (menú del programa principal) no funciona correctamente.	-1,00 por cada opción
-Total	10,00
-Dado que algunos criterios de puntuación son negativos, podría suceder que el balance final fuera negativo. En tal caso la puntuación final será simplemente de 0,00.
+    public String getDigitoControl() {
+        return digitoControl;
+    }
 
-Recursos necesarios para realizar la Tarea.
-Ordenador personal.
-JDK y JRE de Java SE.
-Entorno de desarrollo NetBeans.
-Indicaciones de entrega.
-Una vez que tengas terminados el programa (carpeta de proyecto Netbeans, incluyendo todos los archivos fuente y todos los recursos) y el documento explicativo, comprime ambos en un único archivo comprimido. El envío se realizará a través de la plataforma de la forma establecida para ello, y el archivo se nombrará siguiendo las siguientes pautas:
+    public String getNumeroCuenta() {
+        return numeroCuenta;
+    }
 
-apellido1_apellido2_nombre_SIGxx_Tarea
-
-Asegúrate que el nombre no contenga la letra ñ, tildes ni caracteres especiales extraños. Así por ejemplo la alumna Begoña Sánchez Mañas para la quinta unidad del MP de PROG, debería nombrar esta tarea como...
-
-sanchez_manas_begona_PROG05_Tarea
+    public String getCuentaCompleta() {
+        return cuentaCompleta;
+    }
+    public double getSaldo(){
+        return saldo;
+    }
+````
+*Getters básicos que devuelven los valores de los atributos principales.
+```Java
+    public String depositaSaldo(double inc){
+        if (inc > 0.0){//La cantidad debe ser un nº positivo mayor a 0
+            saldo+=inc;
+            return "Se han depositado " + inc + "€ en la cuenta.";
+        }else{
+            return "Cantidad no válida.";
+        }
+    }
+    public String depositaSaldo(String inc){
+        try
+        {
+            return depositaSaldo(Double.parseDouble(inc));
+        }
+        catch(NumberFormatException e)
+        {
+            return "Formato no válido."; //Controla el error en el formato y devuelve un String
+        }
+    }
+    public String retiraSaldo(double red){
+        if (red > 0.0) {//La cantidad debe ser un nº positivo mayor a 0
+             if (red <= saldo) { //La cantidad a retirar debe ser igual o inferior al saldo total
+                 saldo -= red;
+                 return "Se han retirado " + red + "€ de la cuenta.";
+             }else{
+                 return "Saldo insuficiente.";
+             }
+        }else {
+            return "Cantidad no válida.";
+        }
+    }
+    public String retiraSaldo(String red){
+        try
+        {
+            return retiraSaldo(Double.parseDouble(red));
+        }
+        catch(NumberFormatException e)
+        {
+            return "Formato no válido.";//Controla el error en el formato y devuelve un String
+        }
+    }
+ ````
+ *Estos son getters q hacen en cierta medida funciones de setters, en este caso los declaro así porque me interesa capturar los posibles errores a la hora de introducir los valores (sobrecarga de métodos que permiten introducir el valor tanto en formato String como en double).
+    
